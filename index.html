@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NoteFlow — Personal Notes</title>
+  <meta name="description" content="แอปจดโน้ตส่วนตัว ฟีเจอร์ครบ สวยงาม ใช้งานง่าย" />
+  <meta name="theme-color" content="#1a1410" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fa-solid fa-feather-pointed"></i>
+        <span>NoteFlow</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="themeToggle" title="Toggle Theme (Ctrl+T)"><i
+            class="fa-solid fa-moon"></i></button>
+        <button class="icon-btn" id="sidebarToggle" title="Toggle Sidebar"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="ค้นหาโน้ต... (Ctrl+F)" autocomplete="off" />
+      <button class="icon-btn clear-search hidden" id="clearSearch"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <button class="new-note-btn" id="newNoteBtn">
+      <i class="fa-solid fa-plus"></i>
+      <span>โน้ตใหม่</span>
+      <kbd>Ctrl+N</kbd>
+    </button>
+
+    <!-- Notebooks -->
+    <div class="sidebar-section">
+      <div class="section-header">
+        <span>สมุดโน้ต</span>
+        <button class="icon-btn" id="newNotebookBtn" title="สร้างสมุดโน้ตใหม่"><i
+            class="fa-solid fa-folder-plus"></i></button>
+      </div>
+      <ul class="notebook-list" id="notebookList"></ul>
+    </div>
+
+    <!-- Tags -->
+    <div class="sidebar-section">
+      <div class="section-header"><span>แท็ก</span></div>
+      <div class="tag-cloud" id="tagCloud"></div>
+    </div>
+
+    <!-- Utilities -->
+    <div class="sidebar-section">
+      <button class="trash-btn" id="statsBtn">
+        <i class="fa-solid fa-chart-bar"></i>
+        <span>สถิติการเขียน</span>
+      </button>
+      <button class="trash-btn" id="trashBtn">
+        <i class="fa-solid fa-trash"></i>
+        <span>ถังขยะ</span>
+        <span class="trash-count" id="trashCount">0</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="stat-item"><i class="fa-solid fa-note-sticky"></i> <span id="totalNotes">0</span> โน้ต</div>
+      <div class="stat-item"><i class="fa-solid fa-folder"></i> <span id="totalNotebooks">0</span> สมุด</div>
+      <button class="icon-btn" id="aboutBtn" title="About NoteFlow" style="margin-left:auto;"><i
+          class="fa-solid fa-circle-info"></i></button>
+    </div>
+  </aside>
+
+  <!-- ========== NOTE LIST PANEL ========== -->
+  <div class="note-list-panel" id="noteListPanel">
+    <div class="note-list-header">
+      <button class="icon-btn" id="sidebarToggleAlt" title="Toggle Sidebar" style="margin-right:4px;flex-shrink:0;"><i
+          class="fa-solid fa-sidebar"></i></button>
+      <h2 class="panel-title" id="panelTitle">โน้ตทั้งหมด</h2>
+      <div class="list-controls">
+        <div class="sort-dropdown">
+          <button class="icon-btn" id="sortBtn" title="เรียงลำดับ"><i
+              class="fa-solid fa-arrow-up-wide-short"></i></button>
+          <div class="dropdown-menu hidden" id="sortMenu">
+            <button data-sort="newest"><i class="fa-solid fa-clock-rotate-left"></i> ใหม่สุด</button>
+            <button data-sort="oldest"><i class="fa-solid fa-clock"></i> เก่าสุด</button>
+            <button data-sort="az"><i class="fa-solid fa-arrow-down-a-z"></i> A→Z</button>
+            <button data-sort="pinned"><i class="fa-solid fa-thumbtack"></i> ปักหมุดก่อน</button>
+          </div>
+        </div>
+        <button class="icon-btn" id="gridToggle" title="สลับมุมมอง"><i class="fa-solid fa-grip"></i></button>
+      </div>
+    </div>
+
+    <div class="active-filter hidden" id="activeFilter">
+      <span id="filterLabel"></span>
+      <button class="icon-btn" id="clearFilter"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="note-list" id="noteList"></div>
+    <div class="note-list-empty hidden" id="noteListEmpty">
+      <i class="fa-solid fa-feather"></i>
+      <p>ยังไม่มีโน้ต</p>
+      <small>กด Ctrl+N เพื่อสร้างโน้ตแรก</small>
+    </div>
+  </div>
+
+  <!-- ========== EDITOR PANEL ========== -->
+  <main class="editor-panel" id="editorPanel">
+
+    <!-- Editor Toolbar -->
+    <div class="editor-toolbar" id="editorToolbar">
+
+      <div class="toolbar-group">
+        <button class="tool-btn" data-cmd="bold" title="Bold (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+        <button class="tool-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+        <button class="tool-btn" data-cmd="underline" title="Underline (Ctrl+U)"><i
+            class="fa-solid fa-underline"></i></button>
+        <button class="tool-btn" data-cmd="strikeThrough" title="Strikethrough"><i
+            class="fa-solid fa-strikethrough"></i></button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group">
+        <button class="tool-btn" data-cmd="formatBlock" data-val="h1" title="H1 (พิมพ์ # )">H1</button>
+        <button class="tool-btn" data-cmd="formatBlock" data-val="h2" title="H2 (พิมพ์ ## )">H2</button>
+        <button class="tool-btn" data-cmd="formatBlock" data-val="h3" title="H3 (พิมพ์ ### )">H3</button>
+        <button class="tool-btn" data-cmd="formatBlock" data-val="p" title="ย่อหน้า"><i
+            class="fa-solid fa-paragraph"></i></button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group">
+        <button class="tool-btn" data-cmd="insertUnorderedList" title="Bullet List (พิมพ์ - )"><i
+            class="fa-solid fa-list-ul"></i></button>
+        <button class="tool-btn" data-cmd="insertOrderedList" title="Numbered List (พิมพ์ 1. )"><i
+            class="fa-solid fa-list-ol"></i></button>
+        <button class="tool-btn" id="todoBtn" title="Checklist (Ctrl+Shift+C)"><i
+            class="fa-solid fa-square-check"></i></button>
+        <button class="tool-btn" data-cmd="formatBlock" data-val="blockquote" title="Blockquote (พิมพ์ > )"><i
+            class="fa-solid fa-quote-left"></i></button>
+        <button class="tool-btn" id="codeBtn" title="Code Block (พิมพ์ ``` )"><i class="fa-solid fa-code"></i></button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <div class="toolbar-group">
+        <button class="tool-btn" id="linkBtn" title="Insert Link (Ctrl+K)"><i class="fa-solid fa-link"></i></button>
+        <button class="tool-btn" id="imageBtn" title="แทรกรูปภาพ (วาง/ลากก็ได้)"><i
+            class="fa-solid fa-image"></i></button>
+        <button class="tool-btn" data-cmd="removeFormat" title="ล้างการจัดรูปแบบ"><i
+            class="fa-solid fa-eraser"></i></button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Color Picker -->
+      <div class="toolbar-group color-group">
+        <button class="tool-btn" id="colorBtn" title="สีโน้ต"><i class="fa-solid fa-palette"></i></button>
+        <div class="color-picker-popover hidden" id="colorPicker">
+          <button class="color-swatch" data-color="default" style="background:var(--card-bg)" title="Default"></button>
+          <button class="color-swatch" data-color="red" style="background:#e07070" title="Red"></button>
+          <button class="color-swatch" data-color="orange" style="background:#d4854a" title="Orange"></button>
+          <button class="color-swatch" data-color="yellow" style="background:#d4b44a" title="Yellow"></button>
+          <button class="color-swatch" data-color="green" style="background:#7ab87a" title="Green"></button>
+          <button class="color-swatch" data-color="teal" style="background:#5ab8a8" title="Teal"></button>
+          <button class="color-swatch" data-color="blue" style="background:#7aa8d4" title="Blue"></button>
+          <button class="color-swatch" data-color="purple" style="background:#a890d4" title="Purple"></button>
+        </div>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <!-- Note Actions -->
+      <div class="toolbar-group note-actions">
+        <button class="tool-btn" id="focusBtn" title="Focus Mode (F11)"><i class="fa-solid fa-expand"></i></button>
+        <button class="tool-btn" id="pinBtn" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>
+        <button class="tool-btn" id="lockBtn" title="ล็อกโน้ต"><i class="fa-solid fa-lock-open"></i></button>
+        <button class="tool-btn" id="historyBtn" title="ประวัติการแก้ไข"><i
+            class="fa-solid fa-clock-rotate-left"></i></button>
+        <div class="export-dropdown">
+          <button class="tool-btn" id="exportBtn" title="ส่งออกโน้ต"><i class="fa-solid fa-download"></i></button>
+          <div class="dropdown-menu hidden" id="exportMenu">
+            <button id="exportMd"><i class="fa-brands fa-markdown"></i> Export .md</button>
+            <button id="exportTxt"><i class="fa-solid fa-file-lines"></i> Export .txt</button>
+          </div>
+        </div>
+        <button class="tool-btn danger" id="deleteNoteBtn" title="ลบโน้ต (Ctrl+D)"><i
+            class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+
+    <!-- Editor Content -->
+    <div class="editor-content-wrapper" id="editorContentWrapper">
+      <!-- Note Lock Overlay -->
+      <div class="lock-overlay hidden" id="lockOverlay">
+        <div class="lock-content">
+          <i class="fa-solid fa-lock"></i>
+          <h3>โน้ตนี้ถูกล็อก</h3>
+          <p>ใส่ PIN เพื่อปลดล็อก</p>
+          <div class="pin-dots" id="pinDots">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="pin-pad">
+            <button class="pin-key" data-val="1">1</button><button class="pin-key" data-val="2">2</button><button
+              class="pin-key" data-val="3">3</button>
+            <button class="pin-key" data-val="4">4</button><button class="pin-key" data-val="5">5</button><button
+              class="pin-key" data-val="6">6</button>
+            <button class="pin-key" data-val="7">7</button><button class="pin-key" data-val="8">8</button><button
+              class="pin-key" data-val="9">9</button>
+            <button class="pin-key pin-clear" data-val="clear"><i class="fa-solid fa-delete-left"></i></button>
+            <button class="pin-key" data-val="0">0</button>
+            <button class="pin-key pin-cancel" data-val="cancel"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <p class="pin-error hidden" id="pinError">PIN ไม่ถูกต้อง</p>
+        </div>
+      </div>
+
+      <!-- Meta Bar -->
+      <div class="note-meta-bar">
+        <input type="text" id="noteTitleInput" class="note-title-input" placeholder="ชื่อโน้ต..." maxlength="200" />
+        <div class="note-meta-row">
+          <div class="notebook-selector">
+            <i class="fa-solid fa-folder-open"></i>
+            <select id="notebookSelect">
+              <option value="">ไม่มีสมุดโน้ต</option>
+            </select>
+          </div>
+          <div class="tag-input-wrapper">
+            <i class="fa-solid fa-tag"></i>
+            <div class="tags-display" id="tagsDisplay"></div>
+            <input type="text" id="tagInput" placeholder="เพิ่มแท็ก..." />
+          </div>
+          <div class="note-timestamps">
+            <span id="noteCreatedAt"></span>
+            <span id="noteUpdatedAt"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note Link Suggestion Dropdown -->
+      <div class="link-suggest-dropdown hidden" id="linkSuggest">
+        <div class="link-suggest-list" id="linkSuggestList"></div>
+      </div>
+
+      <!-- Rich Text Editor -->
+      <div id="noteEditor" class="note-editor" contenteditable="true" spellcheck="false"
+        data-placeholder="เริ่มเขียนโน้ตของคุณที่นี่... (พิมพ์ # สำหรับหัวข้อ, - สำหรับ list, [[ สำหรับ link)"></div>
+
+      <!-- Image Upload (hidden input) -->
+      <input type="file" id="imageFileInput" accept="image/*" style="display:none" />
+
+      <!-- Word Count Bar -->
+      <div class="editor-footer">
+        <div class="word-count">
+          <span id="wordCount">0 คำ</span>
+          <span class="divider">•</span>
+          <span id="charCount">0 ตัวอักษร</span>
+        </div>
+        <div class="focus-exit-hint hidden" id="focusExitHint"><kbd>F11</kbd> ออกจาก Focus Mode</div>
+        <div class="save-status" id="saveStatus"><i class="fa-solid fa-circle-check"></i> บันทึกแล้ว</div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="editor-empty-state" id="editorEmptyState">
+      <div class="empty-content">
+        <i class="fa-solid fa-feather-pointed"></i>
+        <h2>NoteFlow</h2>
+        <p>แอปจดโน้ตส่วนตัวของคุณ</p>
+        <button class="new-note-btn-large" id="newNoteBtnLarge">
+          <i class="fa-solid fa-plus"></i> สร้างโน้ตแรก
+        </button>
+        <div class="shortcuts-hint">
+          <div><kbd>Ctrl+N</kbd> โน้ตใหม่</div>
+          <div><kbd>Ctrl+F</kbd> ค้นหา</div>
+          <div><kbd>Ctrl+S</kbd> บันทึก</div>
+          <div><kbd>Ctrl+Space</kbd> จดด่วน</div>
+          <div><kbd>F11</kbd> Focus Mode</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========== MODALS ========== -->
+
+  <!-- Link Insert Modal -->
+  <div class="modal-overlay hidden" id="linkModal">
+    <div class="modal">
+      <h3><i class="fa-solid fa-link"></i> แทรกลิงก์</h3>
+      <label>ข้อความ<input type="text" id="linkText" placeholder="ข้อความที่แสดง" /></label>
+      <label>URL<input type="url" id="linkUrl" placeholder="https://example.com" /></label>
+      <div class="modal-actions">
+        <button class="btn secondary" id="cancelLink">ยกเลิก</button>
+        <button class="btn primary" id="confirmLink">แทรก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Notebook Modal -->
+  <div class="modal-overlay hidden" id="notebookModal">
+    <div class="modal">
+      <h3><i class="fa-solid fa-folder-plus"></i> สร้างสมุดโน้ตใหม่</h3>
+      <label>ชื่อสมุดโน้ต<input type="text" id="notebookNameInput" placeholder="ชื่อสมุดโน้ต..."
+          maxlength="50" /></label>
+      <div class="modal-actions">
+        <button class="btn secondary" id="cancelNotebook">ยกเลิก</button>
+        <button class="btn primary" id="confirmNotebook">สร้าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trash Modal -->
+  <div class="modal-overlay hidden" id="trashModal">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-trash"></i> ถังขยะ</h3>
+        <button class="icon-btn" id="closeTrash"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="trash-list" id="trashList"></div>
+      <div class="modal-actions trash-actions">
+        <button class="btn danger" id="emptyTrashBtn"><i class="fa-solid fa-fire"></i> ล้างถังขยะ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Version History Modal -->
+  <div class="modal-overlay hidden" id="historyModal">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการแก้ไข</h3>
+        <button class="icon-btn" id="closeHistory"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- Stats Dashboard Modal -->
+  <div class="modal-overlay hidden" id="statsModal">
+    <div class="modal modal-large stats-modal">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-chart-bar"></i> สถิติการเขียน</h3>
+        <button class="icon-btn" id="closeStats"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="stats-content" id="statsContent"></div>
+    </div>
+  </div>
+
+  <!-- Set PIN Modal -->
+  <div class="modal-overlay hidden" id="setPinModal">
+    <div class="modal">
+      <h3><i class="fa-solid fa-lock"></i> ตั้ง PIN</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:14px;">ตั้ง PIN 4 หลักเพื่อล็อกโน้ตนี้</p>
+      <label>PIN (4 หลัก)<input type="password" id="setPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+          placeholder="••••" /></label>
+      <label>ยืนยัน PIN<input type="password" id="confirmPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+          placeholder="••••" /></label>
+      <div class="modal-actions">
+        <button class="btn secondary" id="cancelSetPin">ยกเลิก</button>
+        <button class="btn primary" id="confirmSetPin">ล็อกโน้ต</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal">
+      <h3 id="confirmTitle">ยืนยัน</h3>
+      <p id="confirmMessage"></p>
+      <div class="modal-actions">
+        <button class="btn secondary" id="cancelConfirm">ยกเลิก</button>
+        <button class="btn danger" id="doConfirm">ยืนยัน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Capture Overlay -->
+  <div class="quick-capture-overlay hidden" id="quickCapture">
+    <div class="quick-capture-box">
+      <div class="qc-header">
+        <i class="fa-solid fa-bolt"></i>
+        <span>จดด่วน</span>
+        <span class="qc-hint"><kbd>Ctrl+Enter</kbd> บันทึก &nbsp;<kbd>Esc</kbd> ปิด</span>
+      </div>
+      <input type="text" id="qcTitle" placeholder="ชื่อโน้ต..." class="qc-title" />
+      <div id="qcEditor" class="qc-editor" contenteditable="true" spellcheck="false"
+        data-placeholder="เขียนอะไรก็ได้..."></div>
+      <div class="qc-footer">
+        <button class="btn secondary" id="qcCancel">ยกเลิก</button>
+        <button class="btn primary" id="qcSave"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Bubble Toolbar -->
+  <div class="bubble-toolbar hidden" id="bubbleToolbar">
+    <button class="bubble-tool-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+    <button class="bubble-tool-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+    <button class="bubble-tool-btn" data-cmd="underline" title="Underline"><i
+        class="fa-solid fa-underline"></i></button>
+    <button class="bubble-tool-btn" data-cmd="strikeThrough" title="Strikethrough"><i
+        class="fa-solid fa-strikethrough"></i></button>
+    <div class="bubble-divider"></div>
+    <button class="bubble-tool-btn" data-cmd="formatBlock" data-val="h1" title="H1">H1</button>
+    <button class="bubble-tool-btn" data-cmd="formatBlock" data-val="h2" title="H2">H2</button>
+    <div class="bubble-divider"></div>
+    <button class="bubble-tool-btn" data-cmd="insertUnorderedList" title="List"><i
+        class="fa-solid fa-list-ul"></i></button>
+    <button class="bubble-tool-btn" data-cmd="formatBlock" data-val="blockquote" title="Quote"><i
+        class="fa-solid fa-quote-left"></i></button>
+    <div class="bubble-divider"></div>
+    <button class="bubble-tool-btn" id="bubbleLinkBtn" title="Link"><i class="fa-solid fa-link"></i></button>
+    <button class="bubble-tool-btn" data-cmd="removeFormat" title="Clear"><i class="fa-solid fa-eraser"></i></button>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-overlay hidden" id="aboutModal">
+    <div class="modal about-modal">
+      <div class="about-content">
+        <div class="about-icon"><i class="fa-solid fa-feather-pointed"></i></div>
+        <h2 class="about-app-name">NoteFlow</h2>
+        <span class="about-version">v2.0.0</span>
+        <p class="about-tagline">แอปจดโน้ตส่วนตัว — อุ่น เรียบ สบายตา</p>
+        <div class="about-divider"></div>
+        <div class="about-creator">
+          <div class="about-avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+          <div class="about-creator-info">
+            <div class="about-name">Peem.Dev</div>
+            <div class="about-role">AI Engineer</div>
+          </div>
+        </div>
+        <div class="about-divider"></div>
+        <p class="about-love">❤️ Made with love</p>
+        <p class="about-tech">Built with Vanilla HTML · CSS · JavaScript</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn primary" id="closeAbout" style="width:100%">ปิด</button>
+      </div>
+    </div>
+  </div>
+  <!-- ========== CUSTOM CONTEXT MENUS ========== -->
+
+  <!-- Note Card Context Menu -->
+  <div class="ctx-menu hidden" id="ctxNote">
+    <button class="ctx-item" data-action="pin"><i class="fa-solid fa-thumbtack"></i><span>ปักหมุด /
+        ถอดหมุด</span></button>
+    <div class="ctx-sub-wrapper">
+      <button class="ctx-item ctx-has-sub" data-action="color"><i
+          class="fa-solid fa-palette"></i><span>เปลี่ยนสี</span><i
+          class="fa-solid fa-chevron-right ctx-arrow"></i></button>
+      <div class="ctx-sub-menu">
+        <button class="ctx-color-swatch" data-color="default"
+          style="background:var(--card-bg);border:2px solid var(--border-light)"></button>
+        <button class="ctx-color-swatch" data-color="red" style="background:#e07070"></button>
+        <button class="ctx-color-swatch" data-color="orange" style="background:#d4854a"></button>
+        <button class="ctx-color-swatch" data-color="yellow" style="background:#d4b44a"></button>
+        <button class="ctx-color-swatch" data-color="green" style="background:#7ab87a"></button>
+        <button class="ctx-color-swatch" data-color="teal" style="background:#5ab8a8"></button>
+        <button class="ctx-color-swatch" data-color="blue" style="background:#7aa8d4"></button>
+        <button class="ctx-color-swatch" data-color="purple" style="background:#a890d4"></button>
+      </div>
+    </div>
+    <div class="ctx-sub-wrapper">
+      <button class="ctx-item ctx-has-sub" data-action="move"><i
+          class="fa-solid fa-folder-open"></i><span>ย้ายสมุดโน้ต</span><i
+          class="fa-solid fa-chevron-right ctx-arrow"></i></button>
+      <div class="ctx-sub-menu ctx-notebook-sub" id="ctxNotebookSub"></div>
+    </div>
+    <div class="ctx-divider"></div>
+    <button class="ctx-item" data-action="copy"><i class="fa-solid fa-copy"></i><span>สำเนาชื่อโน้ต</span></button>
+    <button class="ctx-item" data-action="lock"><i class="fa-solid fa-lock"></i><span>ล็อก / ปลดล็อก</span></button>
+    <button class="ctx-item" data-action="export"><i class="fa-brands fa-markdown"></i><span>ส่งออก .md</span></button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-item ctx-danger" data-action="delete"><i class="fa-solid fa-trash"></i><span>ลบ</span></button>
+  </div>
+
+  <!-- Editor Context Menu -->
+  <div class="ctx-menu hidden" id="ctxEditor">
+    <button class="ctx-item" data-action="bold"><i
+        class="fa-solid fa-bold"></i><span>Bold</span><kbd>Ctrl+B</kbd></button>
+    <button class="ctx-item" data-action="italic"><i
+        class="fa-solid fa-italic"></i><span>Italic</span><kbd>Ctrl+I</kbd></button>
+    <button class="ctx-item" data-action="underline"><i
+        class="fa-solid fa-underline"></i><span>Underline</span><kbd>Ctrl+U</kbd></button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-item" data-action="link"><i
+        class="fa-solid fa-link"></i><span>แทรกลิงก์</span><kbd>Ctrl+K</kbd></button>
+    <button class="ctx-item" data-action="todo"><i class="fa-solid fa-square-check"></i><span>แทรก
+        Checklist</span></button>
+    <button class="ctx-item" data-action="image"><i class="fa-solid fa-image"></i><span>แทรกรูป</span></button>
+    <button class="ctx-item" data-action="code"><i class="fa-solid fa-code"></i><span>Code Block</span></button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-item" data-action="focus"><i class="fa-solid fa-expand"></i><span>Focus
+        Mode</span><kbd>F11</kbd></button>
+  </div>
+
+  <!-- Notebook Context Menu -->
+  <div class="ctx-menu hidden" id="ctxNotebook">
+    <button class="ctx-item" data-action="rename"><i class="fa-solid fa-pen"></i><span>เปลี่ยนชื่อ</span></button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-item ctx-danger" data-action="deleteNb"><i
+        class="fa-solid fa-trash"></i><span>ลบสมุดโน้ต</span></button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
