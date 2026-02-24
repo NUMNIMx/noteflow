@@ -1,5 +1,5 @@
-/* NoteFlow Service Worker — Offline Cache Strategy */
-const CACHE_NAME = 'noteflow-v1';
+/* 110811 Room Note Service Worker — Offline Cache Strategy */
+const CACHE_NAME = '110811-room-note-v2';
 const ASSETS = [
     './',
     './index.html',

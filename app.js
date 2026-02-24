@@ -1,5 +1,5 @@
 /* ============================================================
-   NoteFlow — app.js (Full Application Logic)
+   110811 Room Note — app.js (Full Application Logic)
    ============================================================ */
 'use strict';
 

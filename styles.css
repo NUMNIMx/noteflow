@@ -2809,16 +2809,13 @@ body.focus-mode .editor-footer {
   width: 100%;
 }
 
-.about-avatar {
+.about-avatar-img {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, #c46b30 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: #fff;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 12px rgba(212, 133, 74, 0.3);
   flex-shrink: 0;
 }
 
