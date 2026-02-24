@@ -49,7 +49,14 @@
     <!-- Notebooks -->
     <div class="sidebar-section">
       <div class="section-header">
-        <span>สมุดโน้ต</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <span>สมุดโน้ต</span>
+          <button class="icon-btn" id="authBtn" title="เข้าสู่ระบบ Cloud Sync"
+            style="font-size:1.1rem; color:var(--text-secondary);"><i class="fa-solid fa-user-circle"></i></button>
+        </div>
+      </div>
+      <div class="section-header" style="margin-top: 10px;">
+        <span>สมุดโน้ตส่วนตัว</span>
         <button class="icon-btn" id="newNotebookBtn" title="สร้างสมุดโน้ตใหม่"><i
             class="fa-solid fa-folder-plus"></i></button>
       </div>
@@ -62,22 +69,26 @@
       <div class="tag-cloud" id="tagCloud"></div>
     </div>
 
-    <!-- Utilities -->
-    <div class="sidebar-section">
-      <button class="trash-btn" id="statsBtn">
-        <i class="fa-solid fa-chart-bar"></i>
-        <span>สถิติการเขียน</span>
-      </button>
-      <button class="trash-btn" id="trashBtn">
-        <i class="fa-solid fa-trash"></i>
-        <span>ถังขยะ</span>
-        <span class="trash-count" id="trashCount">0</span>
-      </button>
+    <div class="cloud-sync-status" id="cloudSyncStatus"
+      style="display:none; font-size: 0.8rem; margin-top:-8px; margin-bottom: 8px; color: var(--text-secondary);"><i
+        class="fa-solid fa-cloud"></i> รอซิงค์...</div>
+    </div>
+
+    <button class="trash-btn" id="statsBtn">
+      <i class="fa-solid fa-chart-bar"></i>
+      <span>สถิติการเขียน</span>
+    </button>
+    <button class="trash-btn" id="trashBtn">
+      <i class="fa-solid fa-trash"></i>
+      <span>ถังขยะ</span>
+      <span class="trash-count" id="trashCount">0</span>
+    </button>
     </div>
 
     <div class="sidebar-footer">
       <div class="stat-item"><i class="fa-solid fa-note-sticky"></i> <span id="totalNotes">0</span> โน้ต</div>
-      <div class="stat-item"><i class="fa-solid fa-folder"></i> <span id="totalNotebooks">0</span> สมุด</div>
+      <button class="icon-btn" id="authBtn" title="เข้าสู่ระบบ Cloud Sync"><i
+          class="fa-solid fa-user-circle"></i></button>
       <button class="icon-btn" id="aboutBtn" title="About" style="margin-left:auto;"><i
           class="fa-solid fa-circle-info"></i></button>
     </div>
@@ -456,6 +467,53 @@
     </div>
   </div>
 
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authOverlay">
+    <div class="modal auth-modal">
+      <div class="modal-header">
+        <h3 id="authTitle">เข้าสู่ระบบ (Cloud Sync)</h3>
+        <button class="icon-btn" id="closeAuthBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="authForm" autocomplete="off">
+          <input type="email" id="authEmail" class="rename-input" placeholder="อีเมล (เช่น dev@note.com)" required>
+          <input type="password" id="authPassword" class="rename-input" placeholder="รหัสผ่าน (6 ตัวอักษรขึ้นไป)"
+            style="margin-top: 10px;" required>
+          <div id="authError" style="color:#ff6b6b; font-size:0.8rem; margin-top:8px; display:none;"></div>
+
+          <div class="settings-actions" style="margin-top: 20px; flex-direction: column; gap: 8px;">
+            <button type="submit" class="base-btn primary" id="authSubmitBtn" style="width: 100%;">เข้าสู่ระบบ</button>
+            <button type="button" class="base-btn" id="authToggleModeBtn"
+              style="width: 100%; border: none;">ยังไม่มีบัญชี? สมัครสมาชิก</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authOverlay">
+    <div class="modal auth-modal">
+      <div class="modal-header">
+        <h3 id="authTitle">เข้าสู่ระบบ (Sync Cloud)</h3>
+        <button class="icon-btn" id="closeAuthBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="authForm" autocomplete="off">
+          <input type="email" id="authEmail" class="rename-input" placeholder="อีเมล (หรือพิมพ์ชื่อ@note.com)" required>
+          <input type="password" id="authPassword" class="rename-input" placeholder="รหัสผ่าน (6 ตัวขึ้นไป)"
+            style="margin-top: 10px;" required>
+          <div id="authError" style="color:#ff6b6b; font-size:0.8rem; margin-top:8px; display:none;"></div>
+
+          <div class="settings-actions" style="margin-top: 20px;">
+            <button type="button" class="base-btn" id="authToggleModeBtn">ยังไม่มีบัญชี? สมัครสมาชิก</button>
+            <button type="submit" class="base-btn primary" id="authSubmitBtn">เข้าสู่ระบบ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Mobile Bottom Nav -->
   <nav class="mobile-bottom-nav" id="mobileBottomNav">
     <button class="mob-nav-item" id="mobNavSidebar"><i class="fa-solid fa-bars"></i><span>เมนู</span></button>
@@ -533,7 +591,8 @@
   <!-- Toast Notification -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script src="app.js"></script>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 
 </html>

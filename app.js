@@ -3,7 +3,24 @@
    ============================================================ */
 'use strict';
 
+import { auth, db } from './firebase-config.js';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
 // ====== STATE ======
+let currentUser = null;
+let cloudSyncTimeout = null;
+let isSyncing = false;
+
 let state = {
   notebooks: [],   // { id, name, createdAt }
   notes: [],       // { id, title, body, notebookId, tags:[], color, pinned, locked, pin, createdAt, updatedAt, trashed, history:[] }
@@ -42,8 +59,63 @@ function loadState() {
   } catch (e) { /* fresh start */ }
 }
 
-function saveState() {
+function saveState(skipCloud = false) {
   try { localStorage.setItem('noteflow_state', JSON.stringify(state)); } catch (e) { }
+
+  // Trigger Firebase Sync with Debounce
+  if (!skipCloud && currentUser) {
+    clearTimeout(cloudSyncTimeout);
+    document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> กำลังรอซิงค์...`;
+
+    cloudSyncTimeout = setTimeout(async () => {
+      try {
+        isSyncing = true;
+        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> กำลังอัปโหลด...`;
+
+        await setDoc(doc(db, "users", currentUser.uid), {
+          stateStr: JSON.stringify(state),
+          updatedAt: Date.now()
+        });
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-check" style="color:#20c997"></i> ซิงค์ล่าสุด ${timeStr}`;
+      } catch (err) {
+        console.error("Cloud Sync Error:", err);
+        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-xmark" style="color:#ff6b6b"></i> ซิงค์ล้มเหลว`;
+      } finally {
+        isSyncing = false;
+      }
+    }, 3000); // 3-second debounce to save writes
+  }
+}
+
+async function syncFromCloud() {
+  if (!currentUser) return;
+  try {
+    document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-down fa-bounce"></i> โหลดข้อมูลจาก Cloud...`;
+    const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+
+    if (docSnap.exists()) {
+      const cloudData = docSnap.data();
+      if (cloudData.stateStr) {
+        // Merge cloud data
+        const cloudState = JSON.parse(cloudData.stateStr);
+        // Simple trust cloud over local for now
+        state = { ...state, ...cloudState };
+        saveState(true); // Save local but don't re-upload
+
+        renderAll();
+        toast('ซิงค์ข้อมูลจาก Cloud สำเร็จ', 'success');
+      }
+    } else {
+      // First time cloud user, upload local
+      saveState();
+    }
+  } catch (err) {
+    console.error("Error fetching from cloud:", err);
+    toast('ไม่สามารถซิงค์ข้อมูลจาก Cloud ได้', 'error');
+  }
 }
 
 // ====== ID / DATE UTILS ======
@@ -1569,6 +1641,76 @@ function initEvents() {
   aboutBtn.addEventListener('click', () => aboutModal.classList.remove('hidden'));
   closeAbout.addEventListener('click', () => aboutModal.classList.add('hidden'));
   aboutModal.addEventListener('click', e => { if (e.target === aboutModal) aboutModal.classList.add('hidden'); });
+
+  // ===== AUTH MODAL (Firebase) =====
+  let isLoginMode = true;
+  const authBtn = document.getElementById('authBtn');
+  const authOverlay = document.getElementById('authOverlay');
+  const closeAuthBtn = document.getElementById('closeAuthBtn');
+  const authForm = document.getElementById('authForm');
+  const authToggleModeBtn = document.getElementById('authToggleModeBtn');
+  const authTitle = document.getElementById('authTitle');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authError = document.getElementById('authError');
+
+  authBtn.addEventListener('click', () => {
+    if (currentUser) {
+      confirmAction('ออกจากระบบ?', `คุณต้องการออกจากระบบ Cloud Sync ใช่หรือไม่?ข้อมูลจะยังอยู่ในเครื่องนี้เหมือนเดิม`, async () => {
+        await signOut(auth);
+        toast('ออกจากระบบแล้ว', 'success');
+      });
+    } else {
+      authOverlay.classList.remove('hidden');
+      authError.style.display = 'none';
+      document.getElementById('authEmail').focus();
+    }
+  });
+
+  closeAuthBtn.addEventListener('click', () => authOverlay.classList.add('hidden'));
+  authOverlay.addEventListener('click', e => { if (e.target === authOverlay) authOverlay.classList.add('hidden'); });
+
+  authToggleModeBtn.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    authError.style.display = 'none';
+    if (isLoginMode) {
+      authTitle.textContent = 'เข้าสู่ระบบ (Cloud Sync)';
+      authSubmitBtn.textContent = 'เข้าสู่ระบบ';
+      authToggleModeBtn.textContent = 'ยังไม่มีบัญชี?';
+    } else {
+      authTitle.textContent = 'สมัครสมาชิก Cloud Sync';
+      authSubmitBtn.textContent = 'สมัครสมาชิก';
+      authToggleModeBtn.textContent = 'มีบัญชีแล้ว? เข้าสู่ระบบ';
+    }
+  });
+
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError.style.display = 'none';
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = 'กำลังดำเนินการ...';
+
+    try {
+      if (isLoginMode) {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast('เข้าสู่ระบบสำเร็จ', 'success');
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+        toast('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ', 'success');
+      }
+      authOverlay.classList.add('hidden');
+      authForm.reset();
+    } catch (err) {
+      console.error(err);
+      authError.textContent = err.message.replace('Firebase:', '').trim();
+      authError.style.display = 'block';
+    } finally {
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = isLoginMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+    }
+  });
 
 
   // Pin

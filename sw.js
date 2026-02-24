@@ -5,6 +5,7 @@ const ASSETS = [
     './index.html',
     './styles.css',
     './app.js',
+    './firebase-config.js',
     './manifest.json',
     './icon-192.png',
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap',

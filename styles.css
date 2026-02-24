@@ -1674,6 +1674,24 @@ kbd {
   color: var(--accent);
 }
 
+/* ====== CLOUD SYNC STATUS ====== */
+.cloud-sync-status {
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.cloud-sync-status i {
+  font-size: 0.9rem;
+}
+
+.fa-spin {
+  animation: fa-spin 1.5s infinite linear;
+}
+
 .toast.warning i {
   color: var(--warning);
 }
