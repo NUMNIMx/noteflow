@@ -2671,6 +2671,11 @@ body.focus-mode .editor-footer {
     padding: 10px 14px;
   }
 
+  .about-avatar-img {
+    width: 36px;
+    height: 36px;
+  }
+
   /* ---- STATUS BAR ---- */
   .editor-footer {
     font-size: 0.7rem;
