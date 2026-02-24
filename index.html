@@ -123,6 +123,9 @@
     <!-- Editor Toolbar -->
     <div class="editor-toolbar" id="editorToolbar">
 
+      <button class="tool-btn mobile-back-btn" id="mobileBackBtn" title="กลับ"><i
+          class="fa-solid fa-arrow-left"></i></button>
+
       <div class="toolbar-group">
         <button class="tool-btn" data-cmd="bold" title="Bold (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
         <button class="tool-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
@@ -452,6 +455,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mob-nav-item" id="mobNavSidebar"><i class="fa-solid fa-bars"></i><span>เมนู</span></button>
+    <button class="mob-nav-item active" id="mobNavNotes"><i
+        class="fa-solid fa-note-sticky"></i><span>โน้ต</span></button>
+    <button class="mob-nav-item mob-nav-fab" id="mobNavNew"><i class="fa-solid fa-plus"></i></button>
+    <button class="mob-nav-item" id="mobNavStats"><i class="fa-solid fa-chart-bar"></i><span>สถิติ</span></button>
+    <button class="mob-nav-item" id="mobNavAbout"><i class="fa-solid fa-circle-info"></i><span>เพิ่มเติม</span></button>
+  </nav>
+
   <!-- ========== CUSTOM CONTEXT MENUS ========== -->
 
   <!-- Note Card Context Menu -->

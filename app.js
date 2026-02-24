@@ -1705,6 +1705,95 @@ function initEvents() {
 }
 
 // ============================================================
+// MOBILE NAVIGATION
+// ============================================================
+function isMobile() { return window.innerWidth <= 600; }
+
+function showMobileEditor() {
+  if (!isMobile()) return;
+  document.body.classList.add('mobile-editor-active');
+  sidebar.classList.remove('mobile-show');
+  updateMobNavActive('editor');
+}
+
+function showMobileNoteList() {
+  if (!isMobile()) return;
+  document.body.classList.remove('mobile-editor-active');
+  sidebar.classList.remove('mobile-show');
+  updateMobNavActive('notes');
+}
+
+function showMobileSidebar() {
+  if (!isMobile()) return;
+  sidebar.classList.add('mobile-show');
+  updateMobNavActive('sidebar');
+}
+
+function hideMobileSidebar() {
+  sidebar.classList.remove('mobile-show');
+  updateMobNavActive('notes');
+}
+
+function updateMobNavActive(tab) {
+  document.querySelectorAll('.mob-nav-item').forEach(el => el.classList.remove('active'));
+  const map = {
+    sidebar: 'mobNavSidebar',
+    notes: 'mobNavNotes',
+    stats: 'mobNavStats',
+    about: 'mobNavAbout',
+  };
+  if (map[tab]) document.getElementById(map[tab])?.classList.add('active');
+}
+
+function initMobileNav() {
+  const mobNavSidebar = document.getElementById('mobNavSidebar');
+  const mobNavNotes = document.getElementById('mobNavNotes');
+  const mobNavNew = document.getElementById('mobNavNew');
+  const mobNavStats = document.getElementById('mobNavStats');
+  const mobNavAbout = document.getElementById('mobNavAbout');
+  const mobileBackBtn = document.getElementById('mobileBackBtn');
+
+  mobNavSidebar?.addEventListener('click', () => {
+    if (sidebar.classList.contains('mobile-show')) {
+      hideMobileSidebar();
+    } else {
+      showMobileSidebar();
+    }
+  });
+
+  mobNavNotes?.addEventListener('click', showMobileNoteList);
+
+  mobNavNew?.addEventListener('click', () => {
+    createNote();
+    if (isMobile()) showMobileEditor();
+  });
+
+  mobNavStats?.addEventListener('click', () => showStatsDashboard());
+  mobNavAbout?.addEventListener('click', () => document.getElementById('aboutModal')?.classList.remove('hidden'));
+
+  mobileBackBtn?.addEventListener('click', showMobileNoteList);
+
+  // Auto-detect when opening a note on mobile → switch to editor view
+  const origOpenNote = openNote;
+  window._origOpenNote = origOpenNote;
+}
+
+// Patch openNote for mobile
+const _baseOpenNote = openNote;
+openNote = function (id) {
+  _baseOpenNote(id);
+  if (isMobile()) showMobileEditor();
+};
+
+// Close sidebar when clicking a notebook/tag on mobile
+document.addEventListener('click', (e) => {
+  if (!isMobile()) return;
+  if (e.target.closest('.notebook-item') || e.target.closest('.tag-item')) {
+    setTimeout(hideMobileSidebar, 150);
+  }
+});
+
+// ============================================================
 // CUSTOM CONTEXT MENUS
 // ============================================================
 const ctxNote = document.getElementById('ctxNote');
@@ -1898,6 +1987,7 @@ function init() {
   editorContentWrapper.style.display = 'none';
 
   initEvents();
+  initMobileNav();
   renderAll();
 
   // Re-open last active note

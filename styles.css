@@ -2395,37 +2395,253 @@ body.focus-mode .editor-footer {
 }
 
 /* ======================================================
-   RESPONSIVE (updated)
+   RESPONSIVE — MOBILE FRIENDLY
    ====================================================== */
+
+/* Hide mobile-only elements on desktop */
+.mobile-back-btn {
+  display: none !important;
+}
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+/* ---- TABLET (≤ 900px) ---- */
 @media (max-width: 900px) {
   :root {
     --list-w: 260px;
   }
 
-  .note-list-panel {
-    display: none;
-  }
-
-  .note-list-panel.mobile-show {
-    display: flex;
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    width: 100%;
-  }
-}
-
-@media (max-width: 600px) {
   .sidebar {
     position: fixed;
     inset: 0;
-    z-index: 100;
+    z-index: 200;
     width: 280px;
     transform: translateX(-100%);
+    transition: transform 0.28s ease;
   }
 
   .sidebar.mobile-show {
     transform: translateX(0);
+  }
+
+  .note-list-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+/* ---- PHONE (≤ 600px) ---- */
+@media (max-width: 600px) {
+  body {
+    flex-direction: column;
+    padding-bottom: 60px;
+    /* space for bottom nav */
+  }
+
+  /* ---- SIDEBAR: Full-screen overlay ---- */
+  .sidebar {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    border-right: none;
+  }
+
+  .sidebar.mobile-show {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+  }
+
+  /* ---- NOTE LIST: Full-screen ---- */
+  .note-list-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    padding-bottom: 64px;
+    display: flex;
+  }
+
+  /* When editing a note on mobile, hide note list */
+  body.mobile-editor-active .note-list-panel {
+    display: none !important;
+  }
+
+  /* ---- EDITOR: Full-screen ---- */
+  .editor-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    display: none;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+
+  body.mobile-editor-active .editor-panel {
+    display: flex !important;
+  }
+
+  /* Show mobile back button */
+  .mobile-back-btn {
+    display: flex !important;
+    margin-right: 4px;
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+
+  /* ---- TOOLBAR: Horizontal scroll ---- */
+  .editor-toolbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding: 6px 8px;
+    scrollbar-width: none;
+  }
+
+  .editor-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toolbar-group {
+    flex-shrink: 0;
+  }
+
+  .toolbar-divider {
+    flex-shrink: 0;
+  }
+
+  .tool-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 0.78rem;
+  }
+
+  .toolbar-right .tool-btn {
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  /* ---- EDITOR CONTENT ---- */
+  .editor-content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 60px;
+  }
+
+  .note-title-input {
+    font-size: 1.3rem;
+  }
+
+  .note-editor {
+    font-size: 0.92rem;
+    padding: 12px 16px;
+    min-height: 300px;
+  }
+
+  .note-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 16px;
+  }
+
+  .note-timestamps {
+    font-size: 0.65rem;
+    display: none;
+    /* hide timestamps on small screens */
+  }
+
+  /* ---- BOTTOM NAV ---- */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border);
+    height: 58px;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .mob-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .mob-nav-item i {
+    font-size: 1.1rem;
+  }
+
+  .mob-nav-item.active {
+    color: var(--accent);
+  }
+
+  .mob-nav-item:active {
+    transform: scale(0.92);
+  }
+
+  /* FAB (center plus) */
+  .mob-nav-fab {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #c46b30);
+    color: #fff !important;
+    font-size: 1rem;
+    box-shadow: 0 4px 16px rgba(212, 133, 74, 0.4);
+    margin-top: -16px;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .mob-nav-fab span {
+    display: none;
+  }
+
+  .mob-nav-fab i {
+    font-size: 1.2rem;
+  }
+
+  /* Hide bottom nav when editor is active */
+  body.mobile-editor-active .mobile-bottom-nav {
+    display: none;
+  }
+
+  /* ---- MODALS: Full width ---- */
+  .modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 85vh;
   }
 
   .stats-content {
@@ -2435,7 +2651,86 @@ body.focus-mode .editor-footer {
   .quick-capture-box {
     width: 95vw;
   }
+
+  .about-modal {
+    max-width: 90vw;
+  }
+
+  .about-creator {
+    padding: 10px 14px;
+  }
+
+  /* ---- STATUS BAR ---- */
+  .editor-footer {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+  }
+
+  /* ---- NOTE CARD: Touch-friendly ---- */
+  .note-card {
+    padding: 14px 16px;
+  }
+
+  .note-card-title {
+    font-size: 0.92rem;
+  }
+
+  /* ---- SIDEBAR FOOTER ---- */
+  .sidebar-footer {
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+  }
+
+  /* Context menus on mobile */
+  .ctx-menu {
+    min-width: 180px;
+    font-size: 0.88rem;
+  }
+
+  /* Bubble toolbar */
+  .bubble-toolbar {
+    bottom: 70px;
+    /* above bottom nav */
+  }
+
+  /* Focus mode on mobile */
+  body.focus-mode .mobile-bottom-nav {
+    display: none;
+  }
+
+  body.focus-mode .editor-panel {
+    display: flex !important;
+    inset: 0;
+    z-index: 500;
+    padding-bottom: 0;
+  }
 }
+
+/* ---- LANDSCAPE PHONE ---- */
+@media (max-height: 500px) and (max-width: 900px) {
+  .mobile-bottom-nav {
+    height: 44px;
+  }
+
+  .mob-nav-item {
+    font-size: 0.55rem;
+    padding: 4px 8px;
+  }
+
+  .mob-nav-fab {
+    width: 38px;
+    height: 38px;
+    margin-top: -10px;
+  }
+
+  .editor-toolbar {
+    padding: 4px 8px;
+  }
+
+  .note-editor {
+    min-height: 200px;
+  }
+}
+
 
 /* ======================================================
    ABOUT MODAL
