@@ -68,14 +68,16 @@ function saveState(skipCloud = false) {
     const syncEl = document.getElementById('cloudSyncStatus');
     if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> กำลังรอซิงค์...`;
 
+    const userToSync = currentUser; // capture before 2-second debounce
     cloudSyncTimeout = setTimeout(async () => {
-      if (!currentUser) return; // Double-check in case logged out during debounce
+      const user = userToSync;
+      if (!user) return; // guard against logout during debounce
       try {
         isSyncing = true;
         if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> กำลังอัปโหลด...`;
 
         // Timeout protection: abort if Firestore takes > 10s
-        const syncPromise = setDoc(doc(db, "users", currentUser.uid), {
+        const syncPromise = setDoc(doc(db, "users", user.uid), {
           stateStr: JSON.stringify(state),
           updatedAt: Date.now()
         });
@@ -441,9 +443,12 @@ function createNote() {
     tags: [],
     color: 'default',
     pinned: false,
+    locked: false,
+    pin: null,
     createdAt: now,
     updatedAt: now,
     trashed: false,
+    history: [],
   };
   state.notes.unshift(note);
   state.settings.activeNoteId = note.id;
@@ -940,9 +945,18 @@ function checkPin() {
   const note = currentUnlockNote;
   if (!note) return;
   if (pinEntry === note.pin) {
+    if (pinTarget === 'unlock-and-clear') {
+      note.locked = false;
+      note.pin = null;
+      note.updatedAt = Date.now();
+      saveState();
+      updateLockBtn(false);
+      toast('ปลดล็อกและเลิกล็อกแล้ว', 'success');
+    } else {
+      toast('ปลดล็อกสำเร็จ', 'success');
+    }
     closeLockOverlay();
     pinError.classList.add('hidden');
-    toast('ปลดล็อกสำเร็จ', 'success');
   } else {
     pinError.classList.remove('hidden');
     pinEntry = '';
@@ -1586,29 +1600,8 @@ function initEvents() {
   // ===== FEATURE 5: NOTE LOCK =====
   lockBtn.addEventListener('click', toggleNoteLock);
   document.querySelectorAll('.pin-key').forEach(key => {
-    key.addEventListener('click', () => {
-      const val = key.dataset.val;
-      if (pinTarget === 'unlock-and-clear' && pinEntry.length === 4) {
-        // handled in checkPin override below
-      }
-      handlePinKey(val);
-      // After 4 digits, if it matches, unlock and clear lock
-      if (pinEntry.length === 0 && pinTarget === 'unlock-and-clear' && currentUnlockNote && !lockOverlay.classList.contains('hidden')) {
-        const note = currentUnlockNote;
-        if (pinEntry === '') {
-          // Already cleared by checkPin success
-          note.locked = false;
-          note.pin = null;
-          saveState();
-          updateLockBtn(false);
-          toast('ปลดล็อกและเลิกล็อกแล้ว', 'success');
-        }
-      }
-    });
+    key.addEventListener('click', () => handlePinKey(key.dataset.val));
   });
-  // Override checkPin to also unlock permanently when pinTarget is 'unlock-and-clear'
-  const _origCheckPin = checkPin;
-  // We redefine it through closure — handled in handlePinKey, checkPin uses currentUnlockNote
 
   // Close lock overlay on background click
   lockOverlay.addEventListener('click', (e) => { if (e.target === lockOverlay) closeLockOverlay(); });
@@ -1930,6 +1923,7 @@ function updateMobNavActive(tab) {
   const map = {
     sidebar: 'mobNavSidebar',
     notes: 'mobNavNotes',
+    editor: 'mobNavNotes',
     stats: 'mobNavStats',
     about: 'mobNavAbout',
   };

@@ -656,7 +656,7 @@ kbd {
 .note-card.active {
   border-color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: 0 0 0 1px var(--accent)20;
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .note-card.active::before {
