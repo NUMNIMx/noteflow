@@ -1456,6 +1456,13 @@ kbd {
   letter-spacing: -0.01em;
 }
 
+#confirmMessage {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+  line-height: 1.55;
+}
+
 .modal h3 i {
   color: var(--accent);
 }

@@ -219,7 +219,7 @@ function renderSidebar() {
     `;
     li.querySelector('.notebook-delete-btn').addEventListener('click', e => {
       e.stopPropagation();
-      confirmAction('ลบสมุดโน้ต', `ลบ "${nb.name}" หรือไม่? โน้ตในสมุดนี้จะไม่ถูกลบ`, () => {
+      confirmAction('🗂️ ลบสมุดโน้ต', `ลบ "<strong>${escHtml(nb.name)}</strong>" หรือไม่? โน้ตในสมุดนี้จะไม่ถูกลบ`, () => {
         state.notes.forEach(n => { if (n.notebookId === nb.id) n.notebookId = null; });
         state.notebooks = state.notebooks.filter(n => n.id !== nb.id);
         if (state.settings.activeNotebookId === nb.id) state.settings.activeNotebookId = null;
@@ -624,7 +624,7 @@ function renderTrashList() {
     `;
     item.querySelector('.restore-btn').addEventListener('click', () => restoreNote(note.id));
     item.querySelector('.perm-delete-btn').addEventListener('click', () => {
-      confirmAction('ลบถาวร', `ลบ "${note.title || 'โน้ตไม่มีชื่อ'}" ถาวรหรือไม่? ไม่สามารถกู้คืนได้`, () => permanentlyDeleteNote(note.id));
+      confirmAction('🗑️ ลบถาวร', `ลบ "<strong>${escHtml(note.title || 'โน้ตไม่มีชื่อ')}</strong>" ถาวรหรือไม่? ไม่สามารถกู้คืนได้`, () => permanentlyDeleteNote(note.id));
     });
     trashList.appendChild(item);
   });
@@ -709,8 +709,8 @@ function confirmInsertLink() {
 
 // ====== CONFIRM DIALOG ======
 function confirmAction(title, message, onConfirm) {
-  confirmTitle.textContent = title;
-  confirmMessage.textContent = message;
+  confirmTitle.innerHTML = title;
+  confirmMessage.innerHTML = message;
   confirmModal.classList.remove('hidden');
   const handler = () => {
     onConfirm();
@@ -1671,7 +1671,15 @@ function initEvents() {
 
   authBtn.addEventListener('click', () => {
     if (currentUser) {
-      confirmAction('ออกจากระบบ?', `คุณต้องการออกจากระบบใช่หรือไม่? คุณจะต้อง login ใหม่เพื่อใช้งานต่อ`, async () => {
+      confirmAction('🚪 ออกจากระบบ', `
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p style="margin:0;font-size:0.9rem;color:var(--text-primary)">คุณต้องการ<strong>ออกจากระบบ</strong>ใช่หรือไม่?</p>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:0.82rem;color:var(--text-secondary);background:var(--bg-tertiary);border-radius:10px;padding:10px 14px">
+            <span>✅&nbsp; ข้อมูลทั้งหมดถูกบันทึกเรียบร้อยแล้ว</span>
+            <span>🔄&nbsp; สามารถกลับเข้าสู่ระบบได้ตลอดเวลา</span>
+          </div>
+        </div>
+      `, async () => {
         await signOut(auth);
         toast('ออกจากระบบแล้ว', 'success');
       });
@@ -2155,7 +2163,7 @@ ctxNotebook.addEventListener('click', e => {
       }
       break;
     case 'deleteNb':
-      confirmAction('ลบสมุดโน้ต', `ลบ "${nb.name}" หรือไม่? โน้ตจะไม่ถูกลบ`, () => {
+      confirmAction('🗂️ ลบสมุดโน้ต', `ลบ "<strong>${escHtml(nb.name)}</strong>" หรือไม่? โน้ตจะไม่ถูกลบ`, () => {
         state.notes.forEach(n => { if (n.notebookId === nb.id) n.notebookId = null; });
         state.notebooks = state.notebooks.filter(b => b.id !== nb.id);
         if (state.settings.activeNotebookId === nb.id) state.settings.activeNotebookId = null;
