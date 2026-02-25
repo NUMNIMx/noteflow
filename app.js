@@ -1509,8 +1509,10 @@ function initEvents() {
     tb.style.top = top + 'px';
   }
 
-  // Show bubble on selection inside editor
+  // Show bubble on selection inside editor (desktop only)
   document.addEventListener('selectionchange', () => {
+    // Skip on touch devices - let native selection UI handle it
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !sel.toString().trim()) {
       if (!bubbleToolbar.matches(':hover')) {
