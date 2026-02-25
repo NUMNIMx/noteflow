@@ -62,59 +62,80 @@ function loadState() {
 function saveState(skipCloud = false) {
   try { localStorage.setItem('noteflow_state', JSON.stringify(state)); } catch (e) { }
 
-  // Trigger Firebase Sync with Debounce
+  // Trigger Firebase Sync with Debounce (only if logged in)
   if (!skipCloud && currentUser) {
     clearTimeout(cloudSyncTimeout);
-    document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> กำลังรอซิงค์...`;
+    const syncEl = document.getElementById('cloudSyncStatus');
+    if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin"></i> กำลังรอซิงค์...`;
 
     cloudSyncTimeout = setTimeout(async () => {
+      if (!currentUser) return; // Double-check in case logged out during debounce
       try {
         isSyncing = true;
-        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> กำลังอัปโหลด...`;
+        if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> กำลังอัปโหลด...`;
 
-        await setDoc(doc(db, "users", currentUser.uid), {
+        // Timeout protection: abort if Firestore takes > 10s
+        const syncPromise = setDoc(doc(db, "users", currentUser.uid), {
           stateStr: JSON.stringify(state),
           updatedAt: Date.now()
         });
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+        );
+        await Promise.race([syncPromise, timeoutPromise]);
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-check" style="color:#20c997"></i> ซิงค์ล่าสุด ${timeStr}`;
+        if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-cloud" style="color:#20c997"></i> ซิงค์ล่าสุด ${timeStr}`;
       } catch (err) {
         console.error("Cloud Sync Error:", err);
-        document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-xmark" style="color:#ff6b6b"></i> ซิงค์ล้มเหลว`;
+        let errMsg = 'ซิงค์ล้มเหลว';
+        if (err.message === 'TIMEOUT') errMsg = 'Firestore ไม่ตอบสนอง — ยังไม่ได้สร้าง Database?';
+        else if (err.message && err.message.includes('PERMISSION_DENIED')) errMsg = 'ไม่มีสิทธิ์เขียน Firestore';
+        else if (err.message && err.message.includes('NOT_FOUND')) errMsg = 'ยังไม่ได้สร้าง Firestore Database';
+        if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b"></i> ${errMsg}`;
       } finally {
         isSyncing = false;
       }
-    }, 3000); // 3-second debounce to save writes
+    }, 2000); // 2-second debounce
   }
 }
 
 async function syncFromCloud() {
   if (!currentUser) return;
+  const syncEl = document.getElementById('cloudSyncStatus');
   try {
-    document.getElementById('cloudSyncStatus').innerHTML = `<i class="fa-solid fa-cloud-arrow-down fa-bounce"></i> โหลดข้อมูลจาก Cloud...`;
-    const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+    if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-cloud-arrow-down fa-bounce"></i> โหลดข้อมูลจาก Cloud...`;
+
+    // Timeout protection
+    const fetchPromise = getDoc(doc(db, "users", currentUser.uid));
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+    );
+    const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
 
     if (docSnap.exists()) {
       const cloudData = docSnap.data();
       if (cloudData.stateStr) {
-        // Merge cloud data
         const cloudState = JSON.parse(cloudData.stateStr);
-        // Simple trust cloud over local for now
         state = { ...state, ...cloudState };
         saveState(true); // Save local but don't re-upload
-
         renderAll();
         toast('ซิงค์ข้อมูลจาก Cloud สำเร็จ', 'success');
       }
     } else {
-      // First time cloud user, upload local
+      // First time cloud user, upload local data
       saveState();
     }
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-cloud" style="color:#20c997"></i> เชื่อมต่อ Cloud ${timeStr}`;
   } catch (err) {
     console.error("Error fetching from cloud:", err);
-    toast('ไม่สามารถซิงค์ข้อมูลจาก Cloud ได้', 'error');
+    let errMsg = 'ไม่สามารถซิงค์ข้อมูลจาก Cloud ได้';
+    if (err.message === 'TIMEOUT') errMsg = 'Firestore ไม่ตอบสนอง — กรุณาสร้าง Firestore Database';
+    toast(errMsg, 'error');
+    if (syncEl) syncEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:#ff6b6b"></i> ${errMsg}`;
   }
 }
 

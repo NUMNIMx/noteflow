@@ -1,5 +1,5 @@
-/* 110811 Room Note Service Worker — Offline Cache Strategy */
-const CACHE_NAME = '110811-room-note-v2';
+/* 110811 Room Note — Service Worker */
+const CACHE_NAME = '110811-room-note-v3';
 const ASSETS = [
     './',
     './index.html',
