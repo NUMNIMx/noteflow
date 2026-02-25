@@ -1678,7 +1678,7 @@ function initEvents() {
 
   authBtn.addEventListener('click', () => {
     if (currentUser) {
-      confirmAction('ออกจากระบบ?', `คุณต้องการออกจากระบบ Cloud Sync ใช่หรือไม่?ข้อมูลจะยังอยู่ในเครื่องนี้เหมือนเดิม`, async () => {
+      confirmAction('ออกจากระบบ?', `คุณต้องการออกจากระบบใช่หรือไม่? คุณจะต้อง login ใหม่เพื่อใช้งานต่อ`, async () => {
         await signOut(auth);
         toast('ออกจากระบบแล้ว', 'success');
       });
@@ -1689,8 +1689,13 @@ function initEvents() {
     }
   });
 
-  closeAuthBtn.addEventListener('click', () => authOverlay.classList.add('hidden'));
-  authOverlay.addEventListener('click', e => { if (e.target === authOverlay) authOverlay.classList.add('hidden'); });
+  // Only allow closing auth modal if already logged in
+  closeAuthBtn.addEventListener('click', () => {
+    if (currentUser) authOverlay.classList.add('hidden');
+  });
+  authOverlay.addEventListener('click', e => {
+    if (e.target === authOverlay && currentUser) authOverlay.classList.add('hidden');
+  });
 
   authToggleModeBtn.addEventListener('click', () => {
     isLoginMode = !isLoginMode;
@@ -2181,17 +2186,28 @@ function init() {
     currentUser = user;
     const authBtnEl = document.getElementById('authBtn');
     const syncStatus = document.getElementById('cloudSyncStatus');
+    const authOverlayEl = document.getElementById('authOverlay');
+    const closeAuthBtnEl = document.getElementById('closeAuthBtn');
     if (user) {
+      // Logged in — hide auth modal, show app
+      if (authOverlayEl) authOverlayEl.classList.add('hidden');
+      if (closeAuthBtnEl) closeAuthBtnEl.style.display = '';
+      document.body.classList.remove('app-locked');
       if (authBtnEl) {
         authBtnEl.innerHTML = `<i class="fa-solid fa-cloud" style="color: var(--accent)"></i>`;
         authBtnEl.setAttribute('title', `ออกจากระบบ (${user.email.replace('@roomnote.app', '')})`);
       }
       if (syncStatus) syncStatus.style.display = 'block';
       await syncFromCloud();
+      renderAll();
     } else {
+      // Not logged in — force show auth modal, block app
+      if (authOverlayEl) authOverlayEl.classList.remove('hidden');
+      if (closeAuthBtnEl) closeAuthBtnEl.style.display = 'none';
+      document.body.classList.add('app-locked');
       if (authBtnEl) {
         authBtnEl.innerHTML = `<i class="fa-solid fa-user-circle"></i>`;
-        authBtnEl.setAttribute('title', 'เข้าสู่ระบบ Cloud Sync');
+        authBtnEl.setAttribute('title', 'เข้าสู่ระบบ');
       }
       if (syncStatus) syncStatus.style.display = 'none';
     }

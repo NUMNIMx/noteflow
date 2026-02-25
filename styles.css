@@ -3227,3 +3227,13 @@ body.focus-mode .editor-footer {
   color: var(--accent);
   font-weight: 600;
 }
+
+/* ---- App Locked (not logged in) ---- */
+body.app-locked .sidebar,
+body.app-locked .editor-panel,
+body.app-locked .mobile-bottom-nav {
+  pointer-events: none;
+  opacity: 0.3;
+  filter: blur(2px);
+  user-select: none;
+}
