@@ -838,9 +838,16 @@ kbd {
   padding: 6px 20px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-secondary);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   min-height: 46px;
   flex-shrink: 0;
+}
+
+.editor-toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbar-group {
