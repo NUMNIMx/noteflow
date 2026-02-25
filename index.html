@@ -151,8 +151,8 @@
       <div class="toolbar-group">
         <button class="tool-btn" data-cmd="formatBlock" data-val="h1" title="H1 (พิมพ์ # )">H1</button>
         <button class="tool-btn" data-cmd="formatBlock" data-val="h2" title="H2 (พิมพ์ ## )">H2</button>
-        <button class="tool-btn" data-cmd="formatBlock" data-val="h3" title="H3 (พิมพ์ ### )">H3</button>
-        <button class="tool-btn" data-cmd="formatBlock" data-val="p" title="ย่อหน้า"><i
+        <button class="tool-btn hide-mobile" data-cmd="formatBlock" data-val="h3" title="H3 (พิมพ์ ### )">H3</button>
+        <button class="tool-btn hide-mobile" data-cmd="formatBlock" data-val="p" title="ย่อหน้า"><i
             class="fa-solid fa-paragraph"></i></button>
       </div>
 
@@ -161,13 +161,14 @@
       <div class="toolbar-group">
         <button class="tool-btn" data-cmd="insertUnorderedList" title="Bullet List (พิมพ์ - )"><i
             class="fa-solid fa-list-ul"></i></button>
-        <button class="tool-btn" data-cmd="insertOrderedList" title="Numbered List (พิมพ์ 1. )"><i
+        <button class="tool-btn hide-mobile" data-cmd="insertOrderedList" title="Numbered List (พิมพ์ 1. )"><i
             class="fa-solid fa-list-ol"></i></button>
-        <button class="tool-btn" id="todoBtn" title="Checklist (Ctrl+Shift+C)"><i
+        <button class="tool-btn hide-mobile" id="todoBtn" title="Checklist (Ctrl+Shift+C)"><i
             class="fa-solid fa-square-check"></i></button>
-        <button class="tool-btn" data-cmd="formatBlock" data-val="blockquote" title="Blockquote (พิมพ์ > )"><i
-            class="fa-solid fa-quote-left"></i></button>
-        <button class="tool-btn" id="codeBtn" title="Code Block (พิมพ์ ``` )"><i class="fa-solid fa-code"></i></button>
+        <button class="tool-btn hide-mobile" data-cmd="formatBlock" data-val="blockquote"
+          title="Blockquote (พิมพ์ > )"><i class="fa-solid fa-quote-left"></i></button>
+        <button class="tool-btn hide-mobile" id="codeBtn" title="Code Block (พิมพ์ ``` )"><i
+            class="fa-solid fa-code"></i></button>
       </div>
 
       <div class="toolbar-divider"></div>
@@ -176,14 +177,14 @@
         <button class="tool-btn" id="linkBtn" title="Insert Link (Ctrl+K)"><i class="fa-solid fa-link"></i></button>
         <button class="tool-btn" id="imageBtn" title="แทรกรูปภาพ (วาง/ลากก็ได้)"><i
             class="fa-solid fa-image"></i></button>
-        <button class="tool-btn" data-cmd="removeFormat" title="ล้างการจัดรูปแบบ"><i
+        <button class="tool-btn hide-mobile" data-cmd="removeFormat" title="ล้างการจัดรูปแบบ"><i
             class="fa-solid fa-eraser"></i></button>
       </div>
 
-      <div class="toolbar-divider"></div>
+      <div class="toolbar-divider hide-mobile"></div>
 
       <!-- Color Picker -->
-      <div class="toolbar-group color-group">
+      <div class="toolbar-group color-group hide-mobile">
         <button class="tool-btn" id="colorBtn" title="สีโน้ต"><i class="fa-solid fa-palette"></i></button>
         <div class="color-picker-popover hidden" id="colorPicker">
           <button class="color-swatch" data-color="default" style="background:var(--card-bg)" title="Default"></button>
@@ -197,14 +198,16 @@
         </div>
       </div>
 
-      <div class="toolbar-spacer"></div>
+      <div class="toolbar-spacer hide-mobile"></div>
 
       <!-- Note Actions -->
       <div class="toolbar-group note-actions">
-        <button class="tool-btn" id="focusBtn" title="Focus Mode (F11)"><i class="fa-solid fa-expand"></i></button>
+        <button class="tool-btn hide-mobile" id="focusBtn" title="Focus Mode (F11)"><i
+            class="fa-solid fa-expand"></i></button>
         <button class="tool-btn" id="pinBtn" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>
-        <button class="tool-btn" id="lockBtn" title="ล็อกโน้ต"><i class="fa-solid fa-lock-open"></i></button>
-        <button class="tool-btn" id="historyBtn" title="ประวัติการแก้ไข"><i
+        <button class="tool-btn hide-mobile" id="lockBtn" title="ล็อกโน้ต"><i
+            class="fa-solid fa-lock-open"></i></button>
+        <button class="tool-btn hide-mobile" id="historyBtn" title="ประวัติการแก้ไข"><i
             class="fa-solid fa-clock-rotate-left"></i></button>
         <div class="export-dropdown">
           <button class="tool-btn" id="exportBtn" title="ส่งออกโน้ต"><i class="fa-solid fa-download"></i></button>

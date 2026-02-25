@@ -1,5 +1,5 @@
 /* 110811 Room Note — Service Worker */
-const CACHE_NAME = '110811-room-note-v4';
+const CACHE_NAME = '110811-room-note-v5';
 const ASSETS = [
     './',
     './index.html',
