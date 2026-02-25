@@ -2843,9 +2843,11 @@ body.focus-mode .editor-footer {
 
 .about-creator {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 18px;
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
@@ -2853,8 +2855,8 @@ body.focus-mode .editor-footer {
 }
 
 .about-avatar-img {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--accent);
@@ -2863,7 +2865,7 @@ body.focus-mode .editor-footer {
 }
 
 .about-creator-info {
-  text-align: left;
+  text-align: center;
 }
 
 .about-name {
