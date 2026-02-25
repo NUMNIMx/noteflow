@@ -1662,7 +1662,7 @@ function initEvents() {
     } else {
       authOverlay.classList.remove('hidden');
       authError.style.display = 'none';
-      document.getElementById('authEmail').focus();
+      document.getElementById('authUsername').focus();
     }
   });
 
@@ -1686,18 +1686,28 @@ function initEvents() {
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authError.style.display = 'none';
-    const email = document.getElementById('authEmail').value.trim();
+    const username = document.getElementById('authUsername').value.trim().toLowerCase();
     const password = document.getElementById('authPassword').value;
+
+    // Validate username
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      authError.textContent = 'ชื่อผู้ใช้ต้องมี 3-20 ตัวอักษร (a-z, 0-9, _ เท่านั้น)';
+      authError.style.display = 'block';
+      return;
+    }
+
+    // Convert username to fake email for Firebase Auth
+    const fakeEmail = `${username}@roomnote.app`;
 
     authSubmitBtn.disabled = true;
     authSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังดำเนินการ...';
 
     try {
       if (isLoginMode) {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, fakeEmail, password);
         toast('เข้าสู่ระบบสำเร็จ ☁️', 'success');
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, fakeEmail, password);
         toast('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ ☁️', 'success');
       }
       authOverlay.classList.add('hidden');
@@ -1706,10 +1716,10 @@ function initEvents() {
       console.error(err);
       let msg = err.message.replace('Firebase:', '').trim();
       // Translate common errors
-      if (msg.includes('email-already-in-use')) msg = 'อีเมลนี้ถูกใช้งานแล้ว';
-      else if (msg.includes('invalid-email')) msg = 'รูปแบบอีเมลไม่ถูกต้อง';
+      if (msg.includes('email-already-in-use')) msg = 'ชื่อผู้ใช้นี้ถูกใช้งานแล้ว';
+      else if (msg.includes('invalid-email')) msg = 'ชื่อผู้ใช้ไม่ถูกต้อง';
       else if (msg.includes('weak-password')) msg = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-      else if (msg.includes('user-not-found') || msg.includes('invalid-credential')) msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+      else if (msg.includes('user-not-found') || msg.includes('invalid-credential')) msg = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
       else if (msg.includes('wrong-password')) msg = 'รหัสผ่านไม่ถูกต้อง';
       authError.textContent = msg;
       authError.style.display = 'block';
@@ -2145,7 +2155,7 @@ function init() {
     if (user) {
       if (authBtnEl) {
         authBtnEl.innerHTML = `<i class="fa-solid fa-cloud" style="color: var(--accent)"></i>`;
-        authBtnEl.setAttribute('title', `ออกจากระบบ (${user.email})`);
+        authBtnEl.setAttribute('title', `ออกจากระบบ (${user.email.replace('@roomnote.app', '')})`);
       }
       if (syncStatus) syncStatus.style.display = 'block';
       await syncFromCloud();

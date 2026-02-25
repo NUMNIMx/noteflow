@@ -478,8 +478,9 @@
       </div>
       <form id="authForm" autocomplete="off">
         <div class="auth-input-group">
-          <i class="fa-solid fa-envelope"></i>
-          <input type="email" id="authEmail" placeholder="อีเมล" required>
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="authUsername" placeholder="ชื่อผู้ใช้ (Username)" required minlength="3" maxlength="20"
+            pattern="[a-zA-Z0-9_]+" title="ใช้ตัวอักษร a-z, 0-9 หรือ _ เท่านั้น">
         </div>
         <div class="auth-input-group">
           <i class="fa-solid fa-lock"></i>
