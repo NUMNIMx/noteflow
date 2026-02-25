@@ -1673,13 +1673,13 @@ function initEvents() {
     isLoginMode = !isLoginMode;
     authError.style.display = 'none';
     if (isLoginMode) {
-      authTitle.textContent = 'เข้าสู่ระบบ (Cloud Sync)';
-      authSubmitBtn.textContent = 'เข้าสู่ระบบ';
-      authToggleModeBtn.textContent = 'ยังไม่มีบัญชี?';
+      authTitle.textContent = 'เข้าสู่ระบบ';
+      authSubmitBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ';
+      authToggleModeBtn.innerHTML = 'ยังไม่มีบัญชี? <span>สมัครสมาชิก</span>';
     } else {
-      authTitle.textContent = 'สมัครสมาชิก Cloud Sync';
-      authSubmitBtn.textContent = 'สมัครสมาชิก';
-      authToggleModeBtn.textContent = 'มีบัญชีแล้ว? เข้าสู่ระบบ';
+      authTitle.textContent = 'สมัครสมาชิก';
+      authSubmitBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> สมัครสมาชิก';
+      authToggleModeBtn.innerHTML = 'มีบัญชีแล้ว? <span>เข้าสู่ระบบ</span>';
     }
   });
 
@@ -1690,25 +1690,34 @@ function initEvents() {
     const password = document.getElementById('authPassword').value;
 
     authSubmitBtn.disabled = true;
-    authSubmitBtn.textContent = 'กำลังดำเนินการ...';
+    authSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังดำเนินการ...';
 
     try {
       if (isLoginMode) {
         await signInWithEmailAndPassword(auth, email, password);
-        toast('เข้าสู่ระบบสำเร็จ', 'success');
+        toast('เข้าสู่ระบบสำเร็จ ☁️', 'success');
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        toast('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ', 'success');
+        toast('สมัครสมาชิกและเข้าสู่ระบบสำเร็จ ☁️', 'success');
       }
       authOverlay.classList.add('hidden');
       authForm.reset();
     } catch (err) {
       console.error(err);
-      authError.textContent = err.message.replace('Firebase:', '').trim();
+      let msg = err.message.replace('Firebase:', '').trim();
+      // Translate common errors
+      if (msg.includes('email-already-in-use')) msg = 'อีเมลนี้ถูกใช้งานแล้ว';
+      else if (msg.includes('invalid-email')) msg = 'รูปแบบอีเมลไม่ถูกต้อง';
+      else if (msg.includes('weak-password')) msg = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+      else if (msg.includes('user-not-found') || msg.includes('invalid-credential')) msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+      else if (msg.includes('wrong-password')) msg = 'รหัสผ่านไม่ถูกต้อง';
+      authError.textContent = msg;
       authError.style.display = 'block';
     } finally {
       authSubmitBtn.disabled = false;
-      authSubmitBtn.textContent = isLoginMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+      authSubmitBtn.innerHTML = isLoginMode
+        ? '<i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ'
+        : '<i class="fa-solid fa-user-plus"></i> สมัครสมาชิก';
     }
   });
 
@@ -2127,6 +2136,27 @@ function init() {
   // Init toolbar/editor visibility
   editorToolbar.style.display = 'none';
   editorContentWrapper.style.display = 'none';
+
+  // Firebase Auth State Listener
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    const authBtnEl = document.getElementById('authBtn');
+    const syncStatus = document.getElementById('cloudSyncStatus');
+    if (user) {
+      if (authBtnEl) {
+        authBtnEl.innerHTML = `<i class="fa-solid fa-cloud" style="color: var(--accent)"></i>`;
+        authBtnEl.setAttribute('title', `ออกจากระบบ (${user.email})`);
+      }
+      if (syncStatus) syncStatus.style.display = 'block';
+      await syncFromCloud();
+    } else {
+      if (authBtnEl) {
+        authBtnEl.innerHTML = `<i class="fa-solid fa-user-circle"></i>`;
+        authBtnEl.setAttribute('title', 'เข้าสู่ระบบ Cloud Sync');
+      }
+      if (syncStatus) syncStatus.style.display = 'none';
+    }
+  });
 
   initEvents();
   initMobileNav();
