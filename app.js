@@ -2010,7 +2010,9 @@ document.addEventListener('click', hideAllCtx);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hideAllCtx(); });
 
 // ---- NOTE CARD CONTEXT MENU ----
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 document.getElementById('noteList').addEventListener('contextmenu', e => {
+  if (isTouchDevice) return; // Let native mobile UI handle it
   const card = e.target.closest('.note-card');
   if (!card) return;
   e.preventDefault();
@@ -2096,6 +2098,7 @@ function moveNoteToNotebook(noteId, notebookId) {
 
 // ---- EDITOR CONTEXT MENU ----
 noteEditor.addEventListener('contextmenu', e => {
+  if (isTouchDevice) return; // Let native mobile UI handle it
   e.preventDefault();
   showCtxMenu(ctxEditor, e.clientX, e.clientY);
 });
@@ -2121,6 +2124,7 @@ ctxEditor.addEventListener('click', e => {
 
 // ---- NOTEBOOK CONTEXT MENU ----
 document.getElementById('notebookList').addEventListener('contextmenu', e => {
+  if (isTouchDevice) return; // Let native mobile UI handle it
   const item = e.target.closest('.notebook-item');
   if (!item) return;
   // Skip "All" item (first child)
