@@ -1721,6 +1721,8 @@ function initEvents() {
       else if (msg.includes('weak-password')) msg = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
       else if (msg.includes('user-not-found') || msg.includes('invalid-credential')) msg = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
       else if (msg.includes('wrong-password')) msg = 'รหัสผ่านไม่ถูกต้อง';
+      else if (msg.includes('configuration-not-found')) msg = 'ยังไม่ได้เปิดใช้งาน Email/Password ใน Firebase Console → Authentication → Sign-in method';
+      else if (msg.includes('too-many-requests')) msg = 'ลองบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่';
       authError.textContent = msg;
       authError.style.display = 'block';
     } finally {
