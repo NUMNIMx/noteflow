@@ -263,7 +263,7 @@ function renderSidebar() {
 
   // Stats
   totalNotes.textContent = state.notes.filter(n => !n.trashed).length;
-  totalNotebooks.textContent = state.notebooks.length;
+  if (totalNotebooks) totalNotebooks.textContent = state.notebooks.length;
 }
 
 // ====== FILTER & SORT NOTES ======
