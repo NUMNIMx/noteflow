@@ -2843,10 +2843,10 @@ body.focus-mode .editor-footer {
 
 .about-creator {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   padding: 16px 18px;
   border-radius: var(--radius-md);
   background: var(--bg-tertiary);
@@ -2865,7 +2865,7 @@ body.focus-mode .editor-footer {
 }
 
 .about-creator-info {
-  text-align: center;
+  text-align: left;
 }
 
 .about-name {
